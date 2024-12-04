@@ -6,12 +6,17 @@ from langchain.schema import HumanMessage
 from datetime import date
 from PIL import Image
 import io
-# Load the uploaded image
-image_path = "https://cdn.gamma.app/teehix1u8sglkpr/generated-images/Q6qzzai5LpXKm6GdRIc9e.jpg"  # Path to the uploaded file
-image = Image.open(image_path)
 
-# Display the image at the top of the app
+# Use the raw URL for the image
+image_url = "https://raw.githubusercontent.com/KaranShah1/travel_app/main/cover_image.jpg"
+
+# Fetch and display the image
+response = requests.get(image_url)
+image = Image.open(BytesIO(response.content))
+
+# Display the image in the Streamlit app
 st.image(image, use_column_width=True, caption="Welcome to the AI Travel Planner!")
+
 
 # Function to fetch places from Google Places API
 def fetch_places_from_google(query):
