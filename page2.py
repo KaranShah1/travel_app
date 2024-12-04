@@ -15,10 +15,6 @@ image_url = "https://raw.githubusercontent.com/KaranShah1/travel_app/main/Cover.
 response = requests.get(image_url)
 image = Image.open(BytesIO(response.content))
 
-# Display the image in the Streamlit app
-st.image(image, use_column_width=True, caption="Welcome to the AI Travel Planner!")
-
-
 # Function to fetch places from Google Places API
 def fetch_places_from_google(query):
     base_url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
@@ -111,8 +107,8 @@ def plan_itinerary_with_langchain():
     formatted_prompt = prompt_template.format(places=places_list, date=date_str)
 
     with st.spinner("Generating your itinerary..."):
-        response = llm([HumanMessage(content=formatted_prompt)])
-        st.markdown(response.content)
+        response = llm([HumanMessage(content=formatted_prompt)]).content
+        st.markdown(response)
 
 # Initialize session state for itinerary bucket and search history
 if 'itinerary_bucket' not in st.session_state:
@@ -159,9 +155,7 @@ if user_query:
         display_places_grid(places_data)
 
     # Show itinerary bucket
-    # Show itinerary bucket
     st.markdown("### 📋 Itinerary Bucket")
-            # Button to clear the entire itinerary bucket
     if st.button("Clear Itinerary Bucket"):
         st.session_state['itinerary_bucket'] = []  # Clear the list
         st.success("Itinerary bucket cleared!")
@@ -174,10 +168,25 @@ if user_query:
             with col2:
                 if st.button("Remove", key=f"remove_{place}"):
                     st.session_state['itinerary_bucket'].remove(place)
-    
     else:
         st.write("Your itinerary bucket is empty.")
 
     # Generate itinerary button
     if st.button("Generate AI Itinerary"):
         plan_itinerary_with_langchain()
+
+# Set up two columns: one for chat, one for the image
+col1, col2 = st.columns([2, 1])  # Adjust column widths as desired
+
+# Content for col1 (Chat Section)
+with col1:
+    st.write("### Creating Your Travel Itinerary with RAGs")
+    st.write("""
+    **K**: Do you use RAGs to give me an itinerary?\n
+    **AI**: Mindtrip is designed to help you discover, plan, and book travel experiences using AI. We provide personalized itineraries based on your preferences and the latest travel trends, which makes it easier for you to explore the world.
+    """)
+    # Add more chat messages as needed
+
+# Content for col2 (Image Section)
+with col2:
+    st.image(image, caption="Travel differently.", use_column_width=True)
