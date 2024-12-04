@@ -1,6 +1,5 @@
-streamlit==1.28.0
+streamlit
 openai
-streamlit_option_menu
 bs4
 numpy
 audio_recorder_streamlit
@@ -25,3 +24,4 @@ youtube-transcript-api==0.6.2
 requests
 PyPDF2
 pymupdf
+streamlit_option_menu
