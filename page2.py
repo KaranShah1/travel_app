@@ -5,6 +5,7 @@ from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage
 from datetime import date
 from PIL import Image
+from io import BytesIO
 import io
 
 # Use the raw URL for the image
