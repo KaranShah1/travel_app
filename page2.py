@@ -9,7 +9,7 @@ from io import BytesIO
 import io
 
 # Use the raw URL for the image
-image_url = "https://raw.githubusercontent.com/KaranShah1/travel_app/main/cover_image.jpg"
+image_url = "https://raw.githubusercontent.com/KaranShah1/travel_app/main/travel.jpg"
 
 # Fetch the image
 response = requests.get(image_url)
