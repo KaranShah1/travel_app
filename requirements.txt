@@ -1,6 +1,6 @@
 streamlit==1.28.0
 openai
-streamlit-option-menu
+streamlit_option_menu
 bs4
 numpy
 audio_recorder_streamlit
