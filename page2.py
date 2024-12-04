@@ -13,7 +13,13 @@ image_url = "https://raw.githubusercontent.com/KaranShah1/travel_app/main/cover_
 
 # Fetch and display the image
 response = requests.get(image_url)
-image = Image.open(BytesIO(response.content))
+
+if response.status_code == 200:
+    image = Image.open(BytesIO(response.content))
+    st.image(image)
+else:
+    st.error(f"Failed to load image. Status code: {response.status_code}")
+
 
 # Function to fetch places from Google Places API
 def fetch_places_from_google(query):
