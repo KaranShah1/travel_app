@@ -6,6 +6,12 @@ from langchain.schema import HumanMessage
 from datetime import date
 from PIL import Image
 import io
+# Load the uploaded image
+image_path = "https://cdn.gamma.app/teehix1u8sglkpr/generated-images/Q6qzzai5LpXKm6GdRIc9e.jpg"  # Path to the uploaded file
+image = Image.open(image_path)
+
+# Display the image at the top of the app
+st.image(image, use_column_width=True, caption="Welcome to the AI Travel Planner!")
 
 # Function to fetch places from Google Places API
 def fetch_places_from_google(query):
