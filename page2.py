@@ -7,6 +7,13 @@ from datetime import date
 from PIL import Image
 import io
 
+# Use the raw URL for the image
+image_url = "https://raw.githubusercontent.com/KaranShah1/travel_app/main/Cover.jpg"
+
+# Fetch and display the image
+response = requests.get(image_url)
+image = Image.open(BytesIO(response.content))
+
 # Function to fetch places from Google Places API
 def fetch_places_from_google(query):
     base_url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
