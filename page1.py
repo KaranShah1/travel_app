@@ -20,7 +20,7 @@ st.markdown(
     }
 
     .main-content {
-        background-image: url('https://github.com/tanu1718/travel-assist/blob/main/background.jpg?raw=true');
+        background-image: url('https://github.com/KaranShah1/travel_app/blob/main/background.jpg?raw=true');
         background-size: cover;
         background-position: center;
         filter: blur(8px);
