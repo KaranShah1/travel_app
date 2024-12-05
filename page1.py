@@ -26,7 +26,6 @@ with st.sidebar:
 api_key = st.secrets["api_key"]
 openai_api_key = st.secrets["key1"]
 
-
 functions = [
             {
             "name": "multi_Func",
@@ -97,7 +96,6 @@ def fetch_places_from_google(query):
     except Exception as e:
         return {"error": str(e)}
 
-
 # Function for interacting with OpenAI's API
 def chat_completion_request(messages):
     try:
@@ -112,7 +110,6 @@ def chat_completion_request(messages):
     except Exception as e:
         st.error(f"Error generating response: {e}")
         return None
-
 
 # Handle function calls from GPT response
 def handle_function_calls(response_message):
@@ -182,7 +179,7 @@ def handle_function_calls(response_message):
 for message in st.session_state['messages']:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
-        
+
 # Display chat history and handle user input
 user_query = st.text_input("🔍 What are you looking for? (e.g., 'restaurants in Los Angeles'):", value=selected_query)
 
@@ -206,3 +203,10 @@ if user_query:
             st.session_state['messages'].append({"role": "assistant", "content": response_message.content})
             with st.chat_message("assistant"):
                 st.markdown(response_message.content)
+
+# Display image on the right side of the chat
+col1, col2 = st.columns([3, 1])  # Create two columns, the second column is for the image
+with col1:
+    pass  # Chat history is already handled above
+with col2:
+    st.image("https://example.com/path_to_your_image.jpg", caption="Image on the Right", use_column_width=True)
