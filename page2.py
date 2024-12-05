@@ -121,8 +121,8 @@ with col1:
         st.session_state['search_history'] = []
 
     # Streamlit app title and sidebar filters
-    st.title("🌍 **Travel Planner with AI** ✈️")
-    st.markdown("Discover amazing places and plan your trip effortlessly!")
+    st.title("🌍 **Discover your next Adventure with AI** ✈️")
+    st.markdown("Your personalized travel companion for seamless planning and unforgettable journeys")
 
     # Sidebar with filters, search history, and saved itineraries
     with st.sidebar:
