@@ -19,7 +19,7 @@ st.markdown(
         background-image: url('https://github.com/tanu1718/travel-assist/blob/main/background.jpg?raw=true');
         background-size: cover;
         background-position: center;
-        filter: blur(5px);  /* Adjust the blur here */
+        
     }
     .st-container {
         position: relative;
