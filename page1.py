@@ -14,11 +14,12 @@ if 'search_history' not in st.session_state:
 st.markdown(
     """
     <style>
+    /* Apply blur effect only to the main content, excluding the sidebar */
     .stApp {
         background-image: url('https://github.com/tanu1718/travel-assist/blob/main/background.jpg?raw=true');
         background-size: cover;
         background-position: center;
-        filter: blur(5px);
+        filter: blur(5px);  /* Adjust the blur here */
     }
     .st-container {
         position: relative;
@@ -31,8 +32,13 @@ st.markdown(
         bottom: 0;
         z-index: 1;
     }
+    /* Exclude the sidebar from the blur */
+    .css-1d391kg {
+        filter: none;
+    }
     </style>
     """, unsafe_allow_html=True)
+
 
 # Streamlit app title and sidebar filters
 st.title("🌍 **Interactive Travel Guide Chatbot** 🤖")
