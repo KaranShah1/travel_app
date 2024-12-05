@@ -2,7 +2,15 @@ import streamlit as st
 import requests
 from openai import OpenAI
 import json
-import time
+from PIL import Image
+from io import BytesIO
+
+# API keys
+api_key = st.secrets["api_key"]
+openai_api_key = st.secrets["key1"]
+
+# Create two columns (left for chat and right for the image)
+col1, col2 = st.columns([2, 1])  # Adjust ratio as needed (2 parts left, 1 part right)
 
 # Initialize session state for chat history and search history
 if 'messages' not in st.session_state:
@@ -10,71 +18,48 @@ if 'messages' not in st.session_state:
 if 'search_history' not in st.session_state:
     st.session_state['search_history'] = []
 
-# Streamlit app title and sidebar filters
-st.title("🌍 **Interactive Travel Guide Chatbot** 🤖")
-st.markdown("Your personal travel assistant to explore amazing places.")
+with col1:
+    # Displaying chat history
+    for message in st.session_state['messages']:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
-with st.sidebar:
-    st.markdown("### Filters")
-    min_rating = st.slider("Minimum Rating", 0.0, 5.0, 3.5, step=0.1)
-    max_results = st.number_input("Max Results to Display", min_value=1, max_value=20, value=10)
-    st.markdown("___")
-    st.markdown("### Search History")
-    selected_query = st.selectbox("Recent Searches", options=[""] + st.session_state['search_history'])
+    # User input for chat
+    user_query = st.text_input("🔍 What are you looking for? (e.g., 'restaurants in Los Angeles'):")
 
-# API keys
-api_key = st.secrets["api_key"]
-openai_api_key = st.secrets["key1"]
+    if user_query:
+        # Add user query to messages history
+        if user_query not in st.session_state["search_history"]:
+            st.session_state["search_history"].append(user_query)
+        
+        st.session_state['messages'].append({"role": "user", "content": user_query})
 
-functions = [
-            {
-            "name": "multi_Func",
-            "description": "Call two functions in one call",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "get_Weather": {
-                        "name": "get_Weather",
-                        "description": "Get the weather for the location.",
-                        "parameters": {
-                            "type": "object",
-                            "properties": {
-                                "location": {
-                                    "type": "string",
-                                    "description": "The city and state, e.g. San Francisco, CA",
-                                }
-                            },
-                            "required": ["location"],
-                        }
-                    },
-                    "get_places_from_google": {
-                        "name": "get_places_from_google",
-                        "description": "Get details of places like hotels, restaurants, tourism locations, lakes, mountain, parks etc. from Google Places API. As long as it is some information about Cities or Towns, any minute details of facilities or places in cities, we can get that information here e.g places in New York, Tourist places in Syracuse etc give details about places in that cities",
-                        "parameters": {
-                            "type": "object",
-                            "properties": {
-                               "query": {"type": "string", "description": "Search query for Google Places API."}
-                            },
-                            "required": ["query"],
-                        }
-                    }
-                }, "required": ["get_Weather", "get_places_from_google"],
-            }
-        }
-]
+        # Get response from OpenAI (function call or chat)
+        with st.spinner("Generating response..."):
+            response = chat_completion_request(st.session_state['messages'])
 
-# Weather data function
-def get_Weather(location, API_key):
-    if "," in location:
-        location = location.split(",")[0].strip()
+        if response:
+            response_message = response.choices[0].message
 
-    urlbase = "https://api.openweathermap.org/data/2.5/"
-    urlweather = f"weather?q={location}&appid={API_key}"
-    url = urlbase + urlweather
-    response = requests.get(url)
-    data = response.json()
-    
-    return data
+            # Handle function call from GPT
+            if response_message.function_call:
+                handle_function_calls(response_message)
+            else:
+                st.session_state['messages'].append({"role": "assistant", "content": response_message.content})
+                with st.chat_message("assistant"):
+                    st.markdown(response_message.content)
+
+
+with col2:
+    # Display the image in the second column (right side)
+    image_url = "https://github.com/KaranShah1/travel_app/blob/main/explore.jpg?raw=true"  # Make sure to use the raw URL for GitHub
+    response = requests.get(image_url)
+
+    if response.status_code == 200:
+        image = Image.open(BytesIO(response.content))
+        st.image(image, use_column_width=True)
+    else:
+        st.error(f"Failed to load image. Status code: {response.status_code}")
 
 # Function to fetch places from Google Places API
 def fetch_places_from_google(query):
@@ -96,7 +81,7 @@ def fetch_places_from_google(query):
     except Exception as e:
         return {"error": str(e)}
 
-# Function for interacting with OpenAI's API
+# Chat completion function (using OpenAI API)
 def chat_completion_request(messages):
     try:
         client = OpenAI(api_key=openai_api_key)
@@ -111,7 +96,7 @@ def chat_completion_request(messages):
         st.error(f"Error generating response: {e}")
         return None
 
-# Handle function calls from GPT response
+# Handle function calls (weather and places)
 def handle_function_calls(response_message):
     function_call = response_message.function_call
     if function_call:
@@ -125,17 +110,18 @@ def handle_function_calls(response_message):
             location = function_args["get_Weather"].get("location")
             if location:
                 st.markdown(f"Fetching weather for: **{location}**")
-                open_api_key = st.secrets['OpenWeatherAPIkey']
-                weather_data = get_Weather(location, open_api_key)
+                weather_data = get_Weather(location, openai_api_key)  # Replace with actual weather API call
+                
+                # Provide weather info to GPT for response generation
                 messages = [
-                    {"role": "user", "content": "Explain in normal English in few words including what kind of clothing can be worn and what tips need to be taken based on the following weather data."},
+                    {"role": "user", "content": "Explain in normal English in a few words what kind of clothing can be worn."},
                     {"role": "user", "content": json.dumps(weather_data)}
                 ]
                 client = OpenAI(api_key=openai_api_key)
                 stream = client.chat.completions.create(
                     model="gpt-4o",
                     messages=messages,
-                    stream = True
+                    stream=True
                 )
                 message_placeholder = st.empty()
                 full_response = ""
@@ -145,7 +131,7 @@ def handle_function_calls(response_message):
                             full_response += chunk.choices[0].delta.content
                             message_placeholder.markdown(full_response + "▌")
                     message_placeholder.markdown(full_response)
-                
+
         # Process get_places_from_google if provided
         if function_args.get("get_places_from_google"):
             query = function_args["get_places_from_google"].get("query")
@@ -171,42 +157,3 @@ def handle_function_calls(response_message):
                             lat, lng = place["geometry"]["location"].values()
                             map_url = f"https://www.google.com/maps/search/?api=1&query={lat},{lng}"
                             st.markdown(f"[📍 View on Map]({map_url})", unsafe_allow_html=True)
-
-    else:
-        st.error("Function call is incomplete.")
-
-# Display chat history
-for message in st.session_state['messages']:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-
-# Display chat history and handle user input
-user_query = st.text_input("🔍 What are you looking for? (e.g., 'restaurants in Los Angeles'):", value=selected_query)
-
-if user_query:
-    if user_query not in st.session_state["search_history"]:
-        st.session_state["search_history"].append(user_query)
-
-    st.session_state['messages'].append({"role": "user", "content": user_query})
-
-    # Get response from OpenAI
-    with st.spinner("Generating response..."):
-        response = chat_completion_request(st.session_state['messages'])
-
-    if response:
-        response_message = response.choices[0].message
-        
-        # Handle function call from GPT
-        if response_message.function_call:
-            handle_function_calls(response_message)
-        else:
-            st.session_state['messages'].append({"role": "assistant", "content": response_message.content})
-            with st.chat_message("assistant"):
-                st.markdown(response_message.content)
-
-# Display image on the right side of the chat
-col1, col2 = st.columns([3, 1])  # Create two columns, the second column is for the image
-with col1:
-    pass  # Chat history is already handled above
-with col2:
-    st.image("https://github.com/KaranShah1/travel_app/blob/main/explore.jpg", caption="Image on the Right", use_column_width=True)
