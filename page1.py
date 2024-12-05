@@ -10,36 +10,6 @@ if 'messages' not in st.session_state:
 if 'search_history' not in st.session_state:
     st.session_state['search_history'] = []
 
-# Set background image and apply blur
-st.markdown(
-    """
-    <style>
-    /* Apply blur effect only to the main content, excluding the sidebar */
-    .stApp {
-        background-image: url('https://github.com/tanu1718/travel-assist/blob/main/background.jpg?raw=true');
-        background-size: cover;
-        background-position: center;
-        
-    }
-    .st-container {
-        position: relative;
-    }
-    .st-container > .st-cm {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 1;
-    }
-    /* Exclude the sidebar from the blur */
-    .css-1d391kg {
-        filter: none;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-
 # Streamlit app title and sidebar filters
 st.title("🌍 **Interactive Travel Guide Chatbot** 🤖")
 st.markdown("Your personal travel assistant to explore amazing places.")
@@ -56,41 +26,42 @@ with st.sidebar:
 api_key = st.secrets["api_key"]
 openai_api_key = st.secrets["key1"]
 
+
 functions = [
-    {
-        "name": "multi_Func",
-        "description": "Call two functions in one call",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "get_Weather": {
-                    "name": "get_Weather",
-                    "description": "Get the weather for the location.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "location": {
-                                "type": "string",
-                                "description": "The city and state, e.g. San Francisco, CA",
-                            }
-                        },
-                        "required": ["location"],
+            {
+            "name": "multi_Func",
+            "description": "Call two functions in one call",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "get_Weather": {
+                        "name": "get_Weather",
+                        "description": "Get the weather for the location.",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "location": {
+                                    "type": "string",
+                                    "description": "The city and state, e.g. San Francisco, CA",
+                                }
+                            },
+                            "required": ["location"],
+                        }
+                    },
+                    "get_places_from_google": {
+                        "name": "get_places_from_google",
+                        "description": "Get details of places like hotels, restaurants, tourism locations, lakes, mountain, parks etc. from Google Places API. As long as it is some information about Cities or Towns, any minute details of facilities or places in cities, we can get that information here e.g places in New York, Tourist places in Syracuse etc give details about places in that cities",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                               "query": {"type": "string", "description": "Search query for Google Places API."}
+                            },
+                            "required": ["query"],
+                        }
                     }
-                },
-                "get_places_from_google": {
-                    "name": "get_places_from_google",
-                    "description": "Get details of places like hotels, restaurants, tourism locations, lakes, mountain, parks etc. from Google Places API. As long as it is some information about Cities or Towns, any minute details of facilities or places in cities, we can get that information here e.g places in New York, Tourist places in Syracuse etc give details about places in that cities",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                           "query": {"type": "string", "description": "Search query for Google Places API."}
-                        },
-                        "required": ["query"],
-                    }
-                }
-            }, "required": ["get_Weather", "get_places_from_google"],
+                }, "required": ["get_Weather", "get_places_from_google"],
+            }
         }
-    }
 ]
 
 # Weather data function
@@ -126,6 +97,7 @@ def fetch_places_from_google(query):
     except Exception as e:
         return {"error": str(e)}
 
+
 # Function for interacting with OpenAI's API
 def chat_completion_request(messages):
     try:
@@ -133,13 +105,14 @@ def chat_completion_request(messages):
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=messages,
-            functions=functions,
+            functions = functions,
             function_call="auto"
         )
         return response
     except Exception as e:
         st.error(f"Error generating response: {e}")
         return None
+
 
 # Handle function calls from GPT response
 def handle_function_calls(response_message):
@@ -165,7 +138,7 @@ def handle_function_calls(response_message):
                 stream = client.chat.completions.create(
                     model="gpt-4o",
                     messages=messages,
-                    stream=True
+                    stream = True
                 )
                 message_placeholder = st.empty()
                 full_response = ""
@@ -229,6 +202,7 @@ if user_query:
         # Handle function call from GPT
         if response_message.function_call:
             handle_function_calls(response_message)
-        
-        st.session_state['messages'].append({"role": response_message.role, "content": response_message.content})
-
+        else:
+            st.session_state['messages'].append({"role": "assistant", "content": response_message.content})
+            with st.chat_message("assistant"):
+                st.markdown(response_message.content)
