@@ -10,25 +10,35 @@ if 'messages' not in st.session_state:
 if 'search_history' not in st.session_state:
     st.session_state['search_history'] = []
 
-# Set background image and apply blur
+# Set background image and apply blur (only for the main content, not the sidebar)
 st.markdown(
     """
     <style>
+    /* Apply background and blur to the main content area */
     .stApp {
-        background-image: url('https://github.com/KaranShah1/travel_app/blob/main/background.jpg?raw=true');
+        display: flex;
+    }
+
+    .main-content {
+        background-image: url('https://github.com/tanu1718/travel-assist/blob/main/background.jpg?raw=true');
         background-size: cover;
         background-position: center;
         filter: blur(8px);
+        flex-grow: 1;
+        padding: 20px;
+        z-index: 0;
     }
+
+    /* Make sure the sidebar is not affected by the blur effect */
+    .css-1d391kg {
+        z-index: 10;
+        position: relative;
+        background-color: rgba(255, 255, 255, 0.9);  /* Optional: make sidebar semi-transparent */
+    }
+
+    /* Make sure the content inside the main area remains visible */
     .st-container {
         position: relative;
-    }
-    .st-container > .st-cm {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
         z-index: 1;
     }
     </style>
@@ -218,11 +228,6 @@ if user_query:
         response = chat_completion_request(st.session_state['messages'])
 
     if response:
-        response_message = response.choices[0].message
-        
-        # Handle function call from GPT
-        if response_message.function_call:
-            handle_function_calls(response_message)
-        
+        response_message = response["choices"][0]["message"]
         st.session_state['messages'].append({"role": response_message.role, "content": response_message.content})
-
+        handle_function_calls(response_message)
