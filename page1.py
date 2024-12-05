@@ -209,4 +209,4 @@ col1, col2 = st.columns([3, 1])  # Create two columns, the second column is for 
 with col1:
     pass  # Chat history is already handled above
 with col2:
-    st.image("https://example.com/path_to_your_image.jpg", caption="Image on the Right", use_column_width=True)
+    st.image("https://github.com/KaranShah1/travel_app/blob/main/explore.jpg", caption="Image on the Right", use_column_width=True)
